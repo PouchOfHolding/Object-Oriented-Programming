@@ -1,9 +1,12 @@
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
 
-class AutoPilotTest {
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class AutoPilotTest {
     @Test
-    void speedShouldHandleLargeWindSpeed() {
+    public void speedShouldHandleLargeWindSpeed() {
         Ponto start = new Ponto(0, 0);
         Ponto finish = new Ponto(100, 100);
         AutoPilot autoPilot = new AutoPilot(start, finish);
@@ -14,7 +17,7 @@ class AutoPilotTest {
     }
 
     @Test
-    void timeShouldHandleLargeDistance() {
+    public void timeShouldHandleLargeDistance() {
         Ponto start = new Ponto(0, 0);
         Ponto finish = new Ponto(1000, 1000);
         AutoPilot autoPilot = new AutoPilot(start, finish);
