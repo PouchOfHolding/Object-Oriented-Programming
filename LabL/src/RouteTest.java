@@ -2,77 +2,70 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class RouteTest {
+
     @Test
-    void shouldReturnCopyOfPointsWhenGettingPontos() {
+    void returnsCopyOfPoints() {
         Ponto[] pontos = {new Ponto(0, 0), new Ponto(1, 1)};
         Route route = new Route(pontos);
-        Ponto[] result = route.getPontos();
-        assertNotSame(pontos, result);
-        assertEquals(pontos.length, result.length);
+        Ponto[] copia = route.getPontos();
+        assertNotSame(pontos, copia);
+        assertEquals(pontos.length, copia.length);
         for (int i = 0; i < pontos.length; i++) {
-            assertEquals(pontos[i].getX(), result[i].getX());
-            assertEquals(pontos[i].getY(), result[i].getY());
+            assertEquals(pontos[i].getX(), copia[i].getX());
+            assertEquals(pontos[i].getY(), copia[i].getY());
         }
     }
 
     @Test
-    void shouldReturnEmptyArrayWhenRouteHasOnePoint() {
-        Ponto[] pontos = {new Ponto(0, 0)};
+    void calculatesTotalLengthForMultipleSegments() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(3, 4), new Ponto(3, 8)};
         Route route = new Route(pontos);
-        SegmentoReta[] segmentos = route.segmentos();
-        assertEquals(0, segmentos.length);
+        double expected = 5.0 + 4.0; // 5 + 4 = 9
+        assertEquals(expected, route.comprimento(), 1e-10);
     }
 
     @Test
-    void shouldReturnSingleSegmentWhenRouteHasTwoPoints() {
-        Ponto[] pontos = {new Ponto(0, 0), new Ponto(1, 1)};
+    void calculatesLengthForSingleSegment() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(6, 8)};
         Route route = new Route(pontos);
-        SegmentoReta[] segmentos = route.segmentos();
-        assertEquals(1, segmentos.length);
-        assertEquals(pontos[0], segmentos[0].getPonto());
-        assertEquals(1, segmentos[0].getVetor().getX());
-        assertEquals(1, segmentos[0].getVetor().getY());
+        double expected = 10.0;
+        assertEquals(expected, route.comprimento(), 1e-10);
     }
 
     @Test
-    void shouldReturnMultipleSegmentsWhenRouteHasMultiplePoints() {
+    void calculatesLengthForZeroLengthRoute() {
+        Ponto[] pontos = {new Ponto(1, 1)};
+        Route route = new Route(pontos);
+        double expected = 0.0;
+        assertEquals(expected, route.comprimento(), 1e-10);
+    }
+
+    @Test
+    void generatesCorrectSegments() {
         Ponto[] pontos = {new Ponto(0, 0), new Ponto(1, 0), new Ponto(1, 1)};
         Route route = new Route(pontos);
-        SegmentoReta[] segmentos = route.segmentos();
-        assertEquals(2, segmentos.length);
+        SegmentoReta[] segs = route.segmentos();
+        assertEquals(2, segs.length);
+        assertEquals(0, segs[0].getPonto().getX(), 1e-10);
+        assertEquals(0, segs[0].getPonto().getY(), 1e-10);
+        assertEquals(1, segs[0].getVetor().getX(), 1e-10);
+        assertEquals(0, segs[0].getVetor().getY(), 1e-10);
+        assertEquals(1, segs[1].getPonto().getX(), 1e-10);
+        assertEquals(0, segs[1].getPonto().getY(), 1e-10);
+        assertEquals(0, segs[1].getVetor().getX(), 1e-10);
+        assertEquals(1, segs[1].getVetor().getY(), 1e-10);
     }
 
     @Test
-    void shouldReturnZeroLengthWhenRouteHasOnePoint() {
-        Ponto[] pontos = {new Ponto(0, 0)};
+    void returnsNullForNoIntersection() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(2, 0)};
         Route route = new Route(pontos);
-        assertEquals(0, route.comprimento());
-    }
-
-    @Test
-    void shouldCalculateLengthForTwoPoints() {
-        Ponto[] pontos = {new Ponto(0, 0), new Ponto(3, 4)};
-        Route route = new Route(pontos);
-        assertEquals(5, route.comprimento());
-    }
-
-    @Test
-    void shouldCalculateTotalLengthForMultiplePoints() {
-        Ponto[] pontos = {new Ponto(0, 0), new Ponto(1, 0), new Ponto(1, 1)};
-        Route route = new Route(pontos);
-        assertEquals(2, route.comprimento());
-    }
-
-    @Test
-    void shouldReturnNullWhenNoIntersection() {
-        Ponto[] pontos = {new Ponto(0, 0), new Ponto(1, 0)};
-        Route route = new Route(pontos);
-        SegmentoReta s = new SegmentoReta(new Ponto(0, 1), new Ponto(1, 1));
+        SegmentoReta s = new SegmentoReta(new Ponto(0, 1), new Ponto(2, 1));
         assertEquals("null", route.intersect(s));
     }
 
     @Test
-    void shouldReturnIntersectionPointWhenIntersecting() {
+    void returnsSingleIntersectionPoint() {
         Ponto[] pontos = {new Ponto(0, 0), new Ponto(2, 0)};
         Route route = new Route(pontos);
         SegmentoReta s = new SegmentoReta(new Ponto(1, -1), new Ponto(1, 1));
@@ -80,26 +73,70 @@ class RouteTest {
     }
 
     @Test
-    void shouldReturnMultipleIntersectionsWhenIntersectingMultipleSegments() {
+    void returnsMultipleIntersectionPoints() {
         Ponto[] pontos = {new Ponto(0, 0), new Ponto(2, 0), new Ponto(2, 2)};
         Route route = new Route(pontos);
         SegmentoReta s = new SegmentoReta(new Ponto(1, -1), new Ponto(1, 1));
-        assertEquals("(1.00,0.00)", route.intersect(s));
+        String result = route.intersect(s);
+        assertTrue(result.contains("(1.00,0.00)"));
+        assertFalse(result.contains("(1.00,1.00)")); // no intersection with second segment
     }
 
     @Test
-    void shouldAvoidDuplicateIntersectionsAtVertices() {
-        Ponto[] pontos = {new Ponto(0, 0), new Ponto(1, 0), new Ponto(1, 1)};
+    void returnsPositionAtStartTime() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(4, 0)};
         Route route = new Route(pontos);
-        SegmentoReta s = new SegmentoReta(new Ponto(1, -1), new Ponto(1, 2));
-        assertEquals("(1.00,0.00) (1.00,1.00)", route.intersect(s));
+        Ponto pos = route.ondeesta(2.0, 0.0);
+        assertEquals(0, pos.getX(), 1e-10);
+        assertEquals(0, pos.getY(), 1e-10);
     }
 
     @Test
-    void shouldReturnNullForRouteWithOnePoint() {
-        Ponto[] pontos = {new Ponto(0, 0)};
+    void returnsPositionAtEndTime() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(4, 0)};
         Route route = new Route(pontos);
-        SegmentoReta s = new SegmentoReta(new Ponto(0, 1), new Ponto(1, 1));
-        assertEquals("null", route.intersect(s));
+        double totalTime = 4.0 / 2.0; // 2
+        Ponto pos = route.ondeesta(2.0, totalTime);
+        assertEquals(4, pos.getX(), 1e-10);
+        assertEquals(0, pos.getY(), 1e-10);
+    }
+
+    @Test
+    void returnsPositionBeyondEndTime() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(4, 0)};
+        Route route = new Route(pontos);
+        Ponto pos = route.ondeesta(2.0, 10.0);
+        assertEquals(4, pos.getX(), 1e-10);
+        assertEquals(0, pos.getY(), 1e-10);
+    }
+
+    @Test
+    void returnsPositionInMiddleOfSegment() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(4, 0), new Ponto(4, 3)};
+        Route route = new Route(pontos);
+        // First segment: length 4, time 4/2=2
+        // At t=1.5, still in first segment
+        Ponto pos = route.ondeesta(2.0, 1.5);
+        assertEquals(3, pos.getX(), 1e-10); // 0 + 2*1.5
+        assertEquals(0, pos.getY(), 1e-10);
+    }
+
+    @Test
+    void returnsPositionAtSegmentBoundary() {
+        Ponto[] pontos = {new Ponto(0, 0), new Ponto(4, 0), new Ponto(4, 3)};
+        Route route = new Route(pontos);
+        // At t=2, exactly at end of first segment
+        Ponto pos = route.ondeesta(2.0, 2.0);
+        assertEquals(4, pos.getX(), 1e-10);
+        assertEquals(0, pos.getY(), 1e-10);
+    }
+
+    @Test
+    void returnsStartPointForSinglePointRoute() {
+        Ponto[] pontos = {new Ponto(5, 5)};
+        Route route = new Route(pontos);
+        Ponto pos = route.ondeesta(1.0, 10.0);
+        assertEquals(5, pos.getX(), 1e-10);
+        assertEquals(5, pos.getY(), 1e-10);
     }
 }

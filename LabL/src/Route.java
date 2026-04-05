@@ -33,7 +33,6 @@ public class Route {
     }
     /**
      * Calcula os pontos de intersecção da rota com um segmento de reta
-     * Corrigido para remover o separador "[]" e evitar duplicados em vértices.
      */
     public String intersect(SegmentoReta s) {
         String result = "";
@@ -52,4 +51,29 @@ public class Route {
         }
         return result.isEmpty() ? "null" : result;
     }
+
+    /**
+     * Determina a posição exata (x, y) do avião após um tempo 't' de voo.
+     * @param vl Velocidade linear constante (km/h, m/s, etc.)
+     * @param t Tempo decorrido desde o início da viagem
+     * @return O Ponto onde o avião se encontra no instante t
+     */
+    public Ponto ondeesta(double vl, double t) {
+        double tempoGasto = 0;
+        for (SegmentoReta s : segmentos()) {
+            // tempo que vai ser passado num determinado segmento
+            double tempoSeg = s.comprimento() / vl;
+            if (tempoGasto + tempoSeg >= t - 1e-9) {
+                double tempoNesteSeg = t - tempoGasto;
+                // Posição = PontoInicial + (VetorVelocidadeSolo * tempoNesteSeg)
+                Vetor vSolo = s.getVetor().mult(vl / s.comprimento());
+                return new Ponto(s.getPonto().getX() + vSolo.getX() * tempoNesteSeg,
+                        s.getPonto().getY() + vSolo.getY() * tempoNesteSeg);
+            }
+            tempoGasto += tempoSeg;
+        }
+        return pontos[pontos.length - 1];
+    }
+
+
 }

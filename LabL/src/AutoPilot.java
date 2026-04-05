@@ -21,20 +21,17 @@ public class AutoPilot {
      * calcula a velocidade do vetor vento
      * @return a velocidade que o veiculo deve manter
      */
-    public Vetor speed(Vetor w, double t) {
-        Vetor r = new Vetor(finish.getX() - start.getX(), finish.getY() - start.getY());
-        // Se a entrada for apenas 'w', temos de calcular 'wt'
-        Vetor wt = w.mult(t);
-        return r.sub(wt).mult(1.0 / t);
+    public Vetor speed(SegmentoReta s, Vetor w, double vl) {
+        Vetor vSolo = s.getVetor().mult(vl / s.comprimento());
+        return vSolo.sub(w);
     }
-
     /**
-     * calcula o tempo de viagem ate ao destino tendo em considereção o vento
+     * Calcula o tempo necessário para percorrer a distância entre start e finish
+     * @param vl a velocidade linear do avião
      * @return o tempo mais ou menos de viagem
      */
     public double time(double vl) {
-        double r = start.distancia(finish); // Distância entre A e B [cite: 17, 39]
-        return r / vl; // t = r / vl
+        return start.distancia(finish) / vl;
     }
 
 }
